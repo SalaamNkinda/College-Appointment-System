@@ -139,16 +139,28 @@ app.post('/appointments', authenticate, (req, res) => {
     if (req.user.role !== 'student') return res.status(403).send('Only students can book appointments.');
 
     const { professor_id, slot_id } = req.body;
-    
-    db.get(`SELECT * FROM availability WHERE id = ?`, [slot_id], (err, slot) => {
-        if (!slot) return res.status(400).send('Slot does not exist.');
 
-        db.run(`INSERT INTO appointments (student_id, professor_id, slot_id, status) VALUES (?, ?, ?, 'booked')`, 
-            [req.user.id, professor_id, slot_id], 
-            function (err) {
-                if (err) return res.status(400).send('Error booking appointment.');
-                res.send({ id: this.lastID });
+    // Step 1: Check if the professor_id exists and is a professor
+    db.get(`SELECT * FROM users WHERE id = ? AND role = 'professor'`, [professor_id], (err, professor) => {
+        if (!professor) return res.status(400).send('Invalid professor ID.');
+
+        // Step 2: Check if the slot_id exists and belongs to the professor
+        db.get(`SELECT * FROM availability WHERE id = ? AND professor_id = ?`, [slot_id, professor_id], (err, slot) => {
+            if (!slot) return res.status(400).send('Slot does not exist or does not belong to the professor.');
+
+            // Step 3: Check if the slot is already booked
+            db.get(`SELECT * FROM appointments WHERE slot_id = ?`, [slot_id], (err, existingAppointment) => {
+                if (existingAppointment) return res.status(400).send('Slot is already booked.');
+
+                // Step 4: Book the appointment
+                db.run(`INSERT INTO appointments (student_id, professor_id, slot_id, status) VALUES (?, ?, ?, 'booked')`, 
+                    [req.user.id, professor_id, slot_id], 
+                    function (err) {
+                        if (err) return res.status(400).send('Error booking appointment.');
+                        res.send({ id: this.lastID });
+                    });
             });
+        });
     });
 });
 

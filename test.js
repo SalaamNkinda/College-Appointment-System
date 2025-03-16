@@ -71,10 +71,20 @@ describe('College Appointment System', () => {
     });
 
     it('books appointment for student A2', async () => {
+        // Add a new availability slot for the professor
+        const resAvailability = await request(app)
+            .post('/availability')
+            .set('Authorization', `Bearer ${professorToken}`)
+            .send({ start_time: '2025-03-16T11:00:00', end_time: '2025-03-16T12:00:00' });
+        
+        const newSlotId = resAvailability.body.id;
+    
+        // Book the new slot for student A2
         const res = await request(app)
             .post('/appointments')
             .set('Authorization', `Bearer ${studentToken2}`)
-            .send({ professor_id: professorId, slot_id: slotId });
+            .send({ professor_id: professorId, slot_id: newSlotId });
+        
         expect(res.status).toBe(200);
         appointmentId2 = res.body.id;
     });
@@ -104,3 +114,4 @@ afterAll(async () => {
         });
     });
 });
+

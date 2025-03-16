@@ -140,19 +140,19 @@ app.post('/appointments', authenticate, (req, res) => {
 
     const { professor_id, slot_id } = req.body;
 
-    // Step 1: Check if the professor_id exists and is a professor
+    // Checking if the professor_id exists and is a professor
     db.get(`SELECT * FROM users WHERE id = ? AND role = 'professor'`, [professor_id], (err, professor) => {
         if (!professor) return res.status(400).send('Invalid professor ID.');
 
-        // Step 2: Check if the slot_id exists and belongs to the professor
+        // Checking if the slot_id exists and belongs to the professor
         db.get(`SELECT * FROM availability WHERE id = ? AND professor_id = ?`, [slot_id, professor_id], (err, slot) => {
             if (!slot) return res.status(400).send('Slot does not exist or does not belong to the professor.');
 
-            // Step 3: Check if the slot is already booked
+            // Checking if the slot is already booked
             db.get(`SELECT * FROM appointments WHERE slot_id = ?`, [slot_id], (err, existingAppointment) => {
                 if (existingAppointment) return res.status(400).send('Slot is already booked.');
 
-                // Step 4: Book the appointment
+                // Booking the appointment
                 db.run(`INSERT INTO appointments (student_id, professor_id, slot_id, status) VALUES (?, ?, ?, 'booked')`, 
                     [req.user.id, professor_id, slot_id], 
                     function (err) {

@@ -14,6 +14,17 @@ app.use(bodyParser.json());
 // Shared SQLite database instance`
 const db = new sqlite3.Database('my_database.db');
 
+//For testing only
+const dropTables = () => {
+    db.serialize(() => {
+        db.run('DROP TABLE IF EXISTS users')
+        db.run('DROP TABLE IF EXISTS availability')
+        db.run('DROP TABLE IF EXISTS appointments')
+    })
+}
+
+dropTables()
+
 // Initialising the database - creating the tables
 const initializeDB = () => {
     db.serialize(() => {

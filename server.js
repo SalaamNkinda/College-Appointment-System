@@ -11,8 +11,8 @@ dotenv.config(); // Loading the environment variables
 const app = express();
 app.use(bodyParser.json());
 
-// Shared SQLite database instance
-const db = new sqlite3.Database(':memory:');
+// Shared SQLite database instance`
+const db = new sqlite3.Database('my_database.db');
 
 // Initialising the database - creating the tables
 const initializeDB = () => {
@@ -50,6 +50,49 @@ const initializeDB = () => {
 };
 
 initializeDB(); // Ensure the database is set up by calling the function
+
+//For visualising the database with pre-filled values.
+const insertData = () => {
+    db.run('INSERT OR IGNORE INTO users (id, email, password, role) VALUES (1, "student1@gmail.com", "password", "student")', function (err) {
+        if (err) console.error('Error inserting student1:', err);
+    });
+
+    db.run('INSERT OR IGNORE INTO users (id, email, password, role) VALUES (2, "student2@gmail.com", "password", "student")', function (err) {
+        if (err) console.error('Error inserting student2:', err);
+    });
+
+    db.run('INSERT OR IGNORE INTO users (id, email, password, role) VALUES (3, "professor1@gmail.com", "password", "professor")', function (err) {
+        if (err) console.error('Error inserting professor1:', err);
+    });
+
+    db.run('INSERT OR IGNORE INTO users (id, email, password, role) VALUES (4, "professor2@gmail.com", "password", "professor")', function (err) {
+        if (err) console.error('Error inserting professor1:', err);
+    });
+
+    // Insert initial availability
+    db.run('INSERT OR IGNORE INTO availability (id, professor_id, start_time, end_time) VALUES (1, 3, "2025-03-21 09:00:00", "2025-03-21 10:00:00")', function (err) {
+        if (err) console.error('Error inserting availability slot 1:', err);
+    });
+
+    db.run('INSERT OR IGNORE INTO availability (id, professor_id, start_time, end_time) VALUES (2, 3, "2025-03-21 11:00:00", "2025-03-21 12:00:00")', function (err) {
+        if (err) console.error('Error inserting availability slot 2:', err);
+    });
+
+    db.run('INSERT OR IGNORE INTO availability (id, professor_id, start_time, end_time) VALUES (3, 4, "2025-03-21 13:00:00", "2025-03-21 15:00:00")', function (err) {
+        if (err) console.error('Error inserting availability slot 2:', err);
+    });
+
+    // Insert initial appointments
+    db.run('INSERT OR IGNORE INTO appointments (id, student_id, professor_id, slot_id, status) VALUES (1, 1, 3, 1, "booked")', function (err) {
+        if (err) console.error('Error inserting appointment 1:', err);
+    });
+
+    db.run('INSERT OR IGNORE INTO appointments (id, student_id, professor_id, slot_id, status) VALUES (2, 2, 3, 2, "booked")', function (err) {
+        if (err) console.error('Error inserting appointment 2:', err);
+    });
+}
+
+insertData();
 
 // Middleware for authentication by verifying the JWT
 const authenticate = (req, res, next) => {
